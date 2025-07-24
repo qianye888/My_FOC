@@ -2,6 +2,8 @@
 #include "sys.h"
 #include "main.h"	
 //FOC_MBD
+
+//TEST
 /*串口测试*/
 void UsartDeal(void)
 {

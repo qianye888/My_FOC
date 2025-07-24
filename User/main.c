@@ -1,7 +1,7 @@
 #include "stm32f10x.h"                  // Device header
 #include "sys.h"
 #include "main.h"	
-
+//main分支
 
 /*串口测试*/
 void UsartDeal(void)

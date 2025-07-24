@@ -34,8 +34,8 @@ void PID_init(void)//初始化pid变量
 	pid_speed.Err_last_2=0.0;
 	pid_speed.Voltage=0.0;
 	pid_speed.Integral=0.0;	
-	pid_speed.Kp=0.005;//待调节0.11
-	pid_speed.Ki=0.0001;//待调节0.005
+	pid_speed.Kp=0.05;//待调节0.11
+	pid_speed.Ki=0.000;//待调节0.005
 	pid_speed.Kd=0.0000;//待调节0.0008
 	pid_speed.OUT = 0;
 	pid_speed.Int_Limit = 0;
@@ -46,7 +46,7 @@ void FOCPARAM_init(void)//初始化FOC变量
 {
 	FOC_Parame.voltage_limit = 10;
 	FOC_Parame.voltage_power_supply = 12.0;
-	FOC_Parame.zero_electric_angle = 0.0689936;
+	FOC_Parame.zero_electric_angle = 0;
 	FOC_Parame.Ualpha = 0;
 	FOC_Parame.Ubeta = 0;
 	FOC_Parame.Ua = 0;

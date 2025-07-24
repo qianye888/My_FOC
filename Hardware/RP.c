@@ -14,7 +14,7 @@ void RP_Init(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
 		
@@ -48,32 +48,6 @@ uint16_t RP_GetValue(uint8_t n)
 	else if (n == 3)
 	{
 		ADC_RegularChannelConfig(ADC2, ADC_Channel_1, 1, ADC_SampleTime_55Cycles5);
-	}
-
-	
-	ADC_SoftwareStartConvCmd(ADC2, ENABLE);
-	while (ADC_GetFlagStatus(ADC2, ADC_FLAG_EOC) == RESET);
-	return ADC_GetConversionValue(ADC2);
-}
-
-
-uint16_t KEY_GetValue(uint8_t n)
-{
-	if (n == 4)
-	{
-		ADC_RegularChannelConfig(ADC2, ADC_Channel_4, 1, ADC_SampleTime_55Cycles5);
-	}
-	else if (n == 5)
-	{
-		ADC_RegularChannelConfig(ADC2, ADC_Channel_5, 1, ADC_SampleTime_55Cycles5);
-	}
-	else if (n == 6)
-	{
-		ADC_RegularChannelConfig(ADC2, ADC_Channel_6, 1, ADC_SampleTime_55Cycles5);
-	}
-	else if (n == 7)
-	{
-		ADC_RegularChannelConfig(ADC2, ADC_Channel_7, 1, ADC_SampleTime_55Cycles5);
 	}
 
 	

@@ -16,20 +16,25 @@ float LOWPass_Filter(float pre_in,uint8_t index,float fif)
 }
 uint32_t loop_mbd = 0;
 uint32_t a = 0;
+
+
 void MBD_APIIN(void)
 {
-	rtSharedDSM.Theta_Inte = AS5600_GetData();
-	rtSharedDSM.Theta_zero = FOC_Parame.zero_electric_angle;
-	rtU.Ud = (int16_t)0;
-	rtU.Uq = (int16_t)Speed_Out;
+	rtU.Theta_Inte = AS5600_GetData();
+	rtU.Theta_zero = 0;
+	
+	rtU.Tar_speed = FOC_Parame.Speed_target;
+	rtU.Speed_kp = pid_speed.Kp;
+	rtU.Speed_ki = pid_speed.Ki;	
+	rtU.Speed_kd = pid_speed.Kd;
 }
-void MBD_APIOUT(void)
-{
-	//out
-	SVPWM_Parame.cmpA = (uint32_t)rtY.PWM_Duty_U*2;
-	SVPWM_Parame.cmpB = (uint32_t)rtY.PWM_Duty_V*2;
-	SVPWM_Parame.cmpC = (uint32_t)rtY.PWM_Duty_W*2;
-}
+//void MBD_APIOUT(void)
+//{
+//	//out
+//	SVPWM_Parame.cmpA = rtY.PWM_Duty_U;
+//	SVPWM_Parame.cmpB = rtY.PWM_Duty_V;
+//	SVPWM_Parame.cmpC = rtY.PWM_Duty_W;
+//}
 
 void MBDSV_APIIN(void)
 {

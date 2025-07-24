@@ -52,13 +52,13 @@ void TIM2_IRQHandler(void)
 	{
 		
 		
-		if(Control_20msFlag != 1)
+		if(flag20ms_cnt < 10)
 		{
 			flag20ms_cnt++;
 	
-			if(flag20ms_cnt>=20)
+			if(flag20ms_cnt>=10)
 			{
-				Control_20msFlag = 1;
+				i++;
 				flag20ms_cnt=0;
 			}
 		}
@@ -76,7 +76,7 @@ void TIM2_IRQHandler(void)
 		}
 
 		
-		//Key_Tick();
+		Key_Tick();
 
 		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 	}

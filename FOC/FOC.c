@@ -280,14 +280,13 @@ void Set_Speed(float Speed)
 	
 	Speed_Out = Speed_Control(temp);
 	XianFu();
-	if(temp <= 5&&temp >= -5)
+	if(Speed == 0)
 	{
 		Speed_Out = 0;
 	}
 	
-		
 	//setTorque(Speed_Out,_electricalAngle());
-	SVPWM_Generate(Speed_Out,_electricalAngle());
+	//SVPWM_Generate(Speed_Out,_electricalAngle());
 	//ÀŸ∂»¥Ú”°
 	//printf("%.2f,%.2f\n",Sensor_Speed,Speed_target);
 }

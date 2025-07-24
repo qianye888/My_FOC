@@ -651,6 +651,21 @@
           <GroupName>MBD</GroupName>
           <Files>
             <File>
+              <FileName>svpwm_V.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MBD\svpwm_V_ert_rtw\svpwm_V.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtwtypes.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MBD\svpwm_V_ert_rtw\rtwtypes.h</FilePath>
+            </File>
+            <File>
+              <FileName>svpwm_V.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\MBD\svpwm_V_ert_rtw\svpwm_V.h</FilePath>
+            </File>
+            <File>
               <FileName>EHB_MOTOR_data.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\MBD\FOC_Motor_ert_rtw\EHB_MOTOR_data.c</FilePath>
@@ -681,19 +696,9 @@
               <FilePath>.\MBD\FOC_Motor_ert_rtw\FOC_Motor_types.h</FilePath>
             </File>
             <File>
-              <FileName>svpwm_V.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\MBD\svpwm_V_ert_rtw\svpwm_V.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtwtypes.h</FileName>
+              <FileName>rtmodel.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\MBD\svpwm_V_ert_rtw\rtwtypes.h</FilePath>
-            </File>
-            <File>
-              <FileName>svpwm_V.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\MBD\svpwm_V_ert_rtw\svpwm_V.h</FilePath>
+              <FilePath>.\MBD\FOC_Motor_ert_rtw\rtmodel.h</FilePath>
             </File>
           </Files>
         </Group>

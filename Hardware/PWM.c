@@ -59,8 +59,6 @@ void PWM_SetCompare3(uint16_t Compare)//写入TIM1通道3的CCR(占空比)
 {
 	TIM_SetCompare3(TIM1,Compare);
 }
-
-
 void PWM_SetCompare4(uint16_t Compare)//写入TIM1通道4的CCR(占空比)
 {
 	TIM_SetCompare4(TIM1,Compare);

@@ -292,7 +292,7 @@ float get_Speed(void)
 {
 	float vel;
 	angle_prev_Velocity = get_Angle();
-	vel = (angle_prev_Velocity - vel_angle_prev_Velocity)*955;
+	vel = (angle_prev_Velocity - vel_angle_prev_Velocity)*100;
 	vel_angle_prev_Velocity = angle_prev_Velocity;
 	
 	//原始数据低通滤波

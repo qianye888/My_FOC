@@ -4,7 +4,7 @@
 
 float Angle_Out;//角度PWM输出
 float Speed_Out;//速度PWM输出
-#define Speedlimit  7000
+#define Speedlimit  5000
 #define Anglelimit  7000
 
 
@@ -63,7 +63,7 @@ float Speed_Control(float Speed_Err)
 **********************/
 void XianFu(void)
 {
-	float Vlimit = 5;
+	float Vlimit = 6;
 	if(Angle_Out>Vlimit)Angle_Out=Vlimit;//角度环力矩输出限幅
 	if(Angle_Out<-Vlimit)Angle_Out=-Vlimit;
 	if(Speed_Out>Vlimit)Speed_Out=Vlimit;//速度环力矩输出限幅

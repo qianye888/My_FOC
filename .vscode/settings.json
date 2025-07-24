@@ -1,0 +1,8 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "dataif.h": "c",
+        "stm32f10x.h": "c",
+        "focparam.h": "c"
+    }
+}

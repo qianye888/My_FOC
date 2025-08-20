@@ -1,7 +1,8 @@
 #include "stm32f10x.h"                  // Device header
 #include "sys.h"
 #include "main.h"	
-//FOC_MBD
+//FOC_MBD test
+
 
 //TEST
 /*串口测试*/

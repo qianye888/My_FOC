@@ -3,7 +3,7 @@
 
 #include "sys.h" 
 
-uint16_t i = 0;
+uint16_t i = 10;  //i = 0;
 uint16_t task_10 = 0;
 uint16_t task_20 = 0;
 uint8_t KeyNum;

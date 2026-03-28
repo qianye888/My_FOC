@@ -46,12 +46,3 @@
 .\objects\dataif.o: .\Hardware\LED.h
 .\objects\dataif.o: .\Hardware\Key.h
 .\objects\dataif.o: .\Hardware\RP.h
-.\objects\dataif.o: .\MBD\FOC_Motor_ert_rtw\EHB_MOTOR.h
-.\objects\dataif.o: .\MBD\FOC_Motor_ert_rtw\rtwtypes.h
-.\objects\dataif.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor_types.h
-.\objects\dataif.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor.h
-.\objects\dataif.o: .\MBD\svpwm_V_ert_rtw\svpwm_V.h
-.\objects\dataif.o: .\MBD\svpwm_V_ert_rtw\rtwtypes.h
-.\objects\dataif.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\string.h
-.\objects\dataif.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
-.\objects\dataif.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\math.h

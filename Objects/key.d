@@ -45,12 +45,3 @@
 .\objects\key.o: .\Hardware\LED.h
 .\objects\key.o: .\Hardware\Key.h
 .\objects\key.o: .\Hardware\RP.h
-.\objects\key.o: .\MBD\FOC_Motor_ert_rtw\EHB_MOTOR.h
-.\objects\key.o: .\MBD\FOC_Motor_ert_rtw\rtwtypes.h
-.\objects\key.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor_types.h
-.\objects\key.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor.h
-.\objects\key.o: .\MBD\svpwm_V_ert_rtw\svpwm_V.h
-.\objects\key.o: .\MBD\svpwm_V_ert_rtw\rtwtypes.h
-.\objects\key.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\string.h
-.\objects\key.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
-.\objects\key.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\math.h

@@ -46,12 +46,3 @@
 .\objects\focparam.o: .\Hardware\LED.h
 .\objects\focparam.o: .\Hardware\Key.h
 .\objects\focparam.o: .\Hardware\RP.h
-.\objects\focparam.o: .\MBD\FOC_Motor_ert_rtw\EHB_MOTOR.h
-.\objects\focparam.o: .\MBD\FOC_Motor_ert_rtw\rtwtypes.h
-.\objects\focparam.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor_types.h
-.\objects\focparam.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor.h
-.\objects\focparam.o: .\MBD\svpwm_V_ert_rtw\svpwm_V.h
-.\objects\focparam.o: .\MBD\svpwm_V_ert_rtw\rtwtypes.h
-.\objects\focparam.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\string.h
-.\objects\focparam.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
-.\objects\focparam.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\math.h

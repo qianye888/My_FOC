@@ -46,3 +46,12 @@
 .\objects\as5600.o: .\Hardware\LED.h
 .\objects\as5600.o: .\Hardware\Key.h
 .\objects\as5600.o: .\Hardware\RP.h
+.\objects\as5600.o: .\MBD\FOC_Motor_ert_rtw\EHB_MOTOR.h
+.\objects\as5600.o: .\MBD\FOC_Motor_ert_rtw\rtwtypes.h
+.\objects\as5600.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor_types.h
+.\objects\as5600.o: .\MBD\FOC_Motor_ert_rtw\FOC_Motor.h
+.\objects\as5600.o: .\MBD\svpwm_V_ert_rtw\svpwm_V.h
+.\objects\as5600.o: .\MBD\svpwm_V_ert_rtw\rtwtypes.h
+.\objects\as5600.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\as5600.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\as5600.o: C:\AAAAA\ruanjian\keil5\ARM\ARMCC\Bin\..\include\math.h

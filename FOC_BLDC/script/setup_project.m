@@ -4,7 +4,7 @@ disp('若有任何问题请及时联系ECU科室');
 % calout=[-10 -8 -6 -4 -2 0 2 4 6 8 10];
 % uiopen('D:\Matlab\QianXun_Prj\mdl\QIANXUN.sldd',1);
 %load('E:\FOC\FOC_BLDC\mdl\R_100K.mat');
-run('E:\FOC\FOC_BLDC\mdl\x.m');
-run('E:\FOC\FOC_BLDC\mdl\y.m');
+run('Y:\FOC\Git_FOC\FOC_BLDC\data\mat\x.m');
+run('Y:\FOC\Git_FOC\FOC_BLDC\data\mat\y.m');
 
 ts_IO612=0.01;

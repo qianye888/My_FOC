@@ -112,15 +112,15 @@ uint8_t Key_Chan[8];
 uint8_t Key_GetCH(uint8_t ch)
 {
 	uint8_t temp;
-	if(KEY_GetValue(ch) <= 0+500)
+	if(KEY_GetValue(ch) <= 0 + 200)
 	{
 		temp = 1;
 	}
-	else if(KEY_GetValue(ch) >= 4095-500)
+	else if(KEY_GetValue(ch) >= 4095 - 500)
 	{
 		temp = 2;
 	}
-	else if((KEY_GetValue(ch) >= 2048-900)&&(KEY_GetValue(ch) <= 2048+900))
+	else if((KEY_GetValue(ch) >= 2048 - 900)&&(KEY_GetValue(ch) <= 2048 + 900))
 	{
 		temp = 0;
 	}

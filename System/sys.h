@@ -9,6 +9,7 @@
 #include "Timer.h"
 #include "FOC.h"
 #include "AS5600.h"
+#include "MPU6050.h"
 #include "Serial.h"
 #include "dataif.h"
 #include "OLED.h"

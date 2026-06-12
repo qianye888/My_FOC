@@ -47,6 +47,8 @@ flowchart TD
 - `Key.c`：ADC 按键扫描，区分短按和长按。
 - `Motor.c`：电机方向引脚与 PWM 输出封装。
 - `AS5600.c`：磁编码器接口。
+- `MPU6050.c` / `MPU6050.h`：MPU6050 传感器初始化与寄存器读写，复用现有 `MyI2C` 总线。
+- `MPU6050` 目前挂在现有软件 I2C 总线上，SCL/SDA 由 `MyI2C.c` 管理，适合和 AS5600 共线使用。
 - `OLED.c` / `Serial.c` / `ADC.c`：显示、串口和模拟量采集。
 
 ### `Library/`

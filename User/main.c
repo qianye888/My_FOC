@@ -13,8 +13,38 @@ uint8_t KeyChan[8];
 uint8_t motor_on = 0;
 uint8_t Control_10msFlag = 0;
 uint16_t pwm_a = 0;
+float mpu6050_pitch_deg = 0.0f;
+float mpu6050_roll_deg = 0.0f;
+float mpu6050_pitch_offset = 0.0f;
+float mpu6050_roll_offset = 0.0f;
 uint16_t pwm_b = 0;
+static void MPU6050_UpdateAttitude(void)
+{
+	float ax = (float)MPU6050_Data.AccX;
+	float ay = (float)MPU6050_Data.AccY;
+	float az = (float)MPU6050_Data.AccZ;
+	float norm = sqrtf(ay * ay + az * az);
+	float pitch_raw;
+	float roll_raw;
+
+	if(norm < 1.0f)
+	{
+		norm = 1.0f;
+	}
+
+	pitch_raw = atan2f(-ax, norm) * 180.0f / PI;
+	roll_raw = atan2f(ay, az) * 180.0f / PI;
+
+	mpu6050_pitch_deg = pitch_raw - mpu6050_pitch_offset;
+	mpu6050_roll_deg = roll_raw - mpu6050_roll_offset;
+
+	if(motor_on == 1 && FOC_Parame.foc_on == 0)
+	{
+		FOC_Parame.Angle_target = mpu6050_pitch_deg;
+	}
+}
 uint16_t pwm_c = 0;
+uint8_t mpu6050_id = 0;
 
 /* 串口状态输出 */
 void UsartDeal(void)
@@ -25,48 +55,15 @@ void UsartDeal(void)
 /* OLED 状态面板 */
 void OLEDDeal(void)
 {
-	OLED_Printf(0, 0, OLED_6X8, "Angle");
-	if(temp_a == 1)
-	{
-		OLED_Printf(40, 0, OLED_6X8, "+");
-	}
-	else
-	{
-		OLED_Printf(40, 0, OLED_6X8, "-");
-	}
-	OLED_Printf(0, 12, OLED_6X8, "At:%05.1f", FOC_Parame.Angle_target);
-	OLED_Printf(0, 20, OLED_6X8, "Aa:%05.1f", FOC_Parame.Sensor_Angle);	
-	OLED_Printf(0, 28, OLED_6X8, "Ap:%05.5f", pid_angle.Kp);
-	OLED_Printf(0, 36, OLED_6X8, "Ai:%05.5f", pid_angle.Ki);
-	OLED_Printf(0, 44, OLED_6X8, "Ad:%05.5f", pid_angle.Kd);
-	
-	
-	OLED_Printf(64, 0, OLED_6X8, "Speed");	
-	if(temp_s == 1)
-	{
-		OLED_Printf(104, 0, OLED_6X8, "+");
-	}
-	else
-	{
-		OLED_Printf(104, 0, OLED_6X8, "-");
-	}	
-	OLED_Printf(64, 12, OLED_6X8, "St:%05.1f", FOC_Parame.Speed_target);
-	OLED_Printf(64, 20, OLED_6X8, "Sa:%05.1f", FOC_Parame.Sensor_Speed);		
-	OLED_Printf(64, 28, OLED_6X8, "Sp:%05.5f", pid_speed.Kp);
-	OLED_Printf(64, 36, OLED_6X8, "Si:%05.5f", pid_speed.Ki);
-	OLED_Printf(64, 44, OLED_6X8, "Sd:%05.5f", pid_speed.Kd);
-	
-	if(motor_on)
-	{	
-		OLED_Printf(0, 56, OLED_6X8, "MOTOR_O N");
-	}
-	else
-	{
-		OLED_Printf(0, 56, OLED_6X8, "MOTOR_OFF");
-	}
-	OLED_Printf(64, 56, OLED_6X8, "Uq:%05.5f", Speed_Out);
-	
-	OLED_Update();	
+	OLED_Clear();
+	OLED_Printf(0, 0, OLED_6X8, "IMU P:%+05.1f R:%+05.1f", mpu6050_pitch_deg, mpu6050_roll_deg);
+	OLED_Printf(0, 8, OLED_6X8, "Ax:%+06d Ay:%+06d", MPU6050_Data.AccX, MPU6050_Data.AccY);
+	OLED_Printf(0, 16, OLED_6X8, "Az:%+06d T:%05.2f", MPU6050_Data.AccZ, MPU6050_Data.Temperature);
+	OLED_Printf(0, 26, OLED_6X8, "At:%05.1f Aa:%05.1f", FOC_Parame.Angle_target, FOC_Parame.Sensor_Angle);
+	OLED_Printf(0, 36, OLED_6X8, "St:%05.1f Sa:%05.1f", FOC_Parame.Speed_target, FOC_Parame.Sensor_Speed);
+	OLED_Printf(0, 46, OLED_6X8, "ID:%02X M:%s", mpu6050_id, motor_on ? "ON" : "OFF");
+	OLED_Printf(64, 46, OLED_6X8, "Uq:%05.2f", Speed_Out);
+	OLED_Update();
 }
 
 int main(void)
@@ -95,6 +92,8 @@ void task_10ms(void)
 		task_10++;
 		
 		
+			MPU6050_ReadRaw();
+			MPU6050_UpdateAttitude();
 		if(motor_on == 1)
 		{
 			MOTOR_ON();
@@ -113,9 +112,10 @@ void task_10ms(void)
 			MOTOR_OFF();
 		}
 		i++;
-		
 		FOC_Parame.Sensor_Angle = get_Angle();
 		FOC_Parame.Sensor_Speed = get_Speed();
+		MPU6050_ReadRaw();
+		MPU6050_UpdateAttitude();
 		
 		FOC_Parame.lastSensor_Angle = FOC_Parame.Sensor_Angle;
 		FOC_Parame.lastSensor_Speed = FOC_Parame.Sensor_Speed;
@@ -256,6 +256,12 @@ void Bsw_Init(void)
 	Timer_Init();	
 	FOC_Init(12.6);
 	FOC_AS5600_Init(7,1);
+	MPU6050_Init();
+	MPU6050_ReadRaw();
+	MPU6050_UpdateAttitude();
+	mpu6050_pitch_offset = mpu6050_pitch_deg;
+	mpu6050_roll_offset = mpu6050_roll_deg;
+	mpu6050_id = MPU6050_ReadID();
 	OLED_Init();
 	RP_Init();
 	Serial_Init(19200);

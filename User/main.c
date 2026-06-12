@@ -1,41 +1,30 @@
 #include "stm32f10x.h"                  // Device header
 #include "sys.h"
 #include "main.h"	
-//main分支
 
-/*串口测试*/
+// 全局状态集中在 main.c 定义，其他模块通过 main.h 引用。
+int8_t temp_a = 1;
+int8_t temp_s = 1;
+uint16_t i = 0;
+uint16_t task_10 = 0;
+uint16_t task_20 = 0;
+uint8_t KeyNum[8];
+uint8_t KeyChan[8];
+uint8_t motor_on = 0;
+uint8_t Control_10msFlag = 0;
+uint16_t pwm_a = 0;
+uint16_t pwm_b = 0;
+uint16_t pwm_c = 0;
+
+/* 串口状态输出 */
 void UsartDeal(void)
 {
-	//Serial_SendByte((uint8_t)getVelocity());
-	//Serial_Printf("%d,%d,%d,%d,%d,%d,%d,%d\r\n", Key_Num[0], Key_Num[1], Key_Num[2], Key_Num[3],Key_Num[4],Key_Num[5],Key_Num[6],Key_Num[7]);
-	
-	//Serial_Printf("%f,%f,%f\r\n", SVPWM_Parame.calculate_Ua, SVPWM_Parame.calculate_Ub, SVPWM_Parame.calculate_Uc);	
-	//Serial_Printf("%d,%d\r\n", i, task_10);
-	//Serial_Printf("%d,%d,%d,%d,%f\r\n", SVPWM_Parame.sector, SVPWM_Parame.cmpA, SVPWM_Parame.cmpB, SVPWM_Parame.cmpC,FOC_Parame.Sensor_Speed);
-	//Serial_Printf("%d,%d,%d,%d,%d\r\n", SVPWM_Parame.sector, SVPWM_Parame.Ta, SVPWM_Parame.Tb, SVPWM_Parame.Tc, SVPWM_Parame.Tpwm);
 	Serial_Printf("%f,%f,%f,%f\r\n", FOC_Parame.Speed_target, FOC_Parame.Sensor_Speed, FOC_Parame.Angle_target, FOC_Parame.Sensor_Angle);
 }
 
-/*OLED测试*/
+/* OLED 状态面板 */
 void OLEDDeal(void)
 {
-//	OLED_Printf(0, 0, OLED_8X16, "i:%+d", i);
-//	OLED_Printf(0, 16, OLED_8X16, "task10:%+d", task_10);	
-	
-//	OLED_Printf(0, 16, OLED_8X16, "task:%+d", task_10);
-//	OLED_Printf(0, 32, OLED_8X16, "task_20:%+04d", task_20);	
-//	OLED_ShowFloatNum(0, 0, get_Angle_360(), 5, 5, OLED_8X16);
-//	OLED_ShowFloatNum(0, 16, get_Angle_2PI(), 5, 5, OLED_8X16);
-//	OLED_ShowFloatNum(0, 32, get_Angle(), 5, 5, OLED_8X16);
-//	OLED_ShowFloatNum(0, 48, full_rotations, 5, 5, OLED_8X16);	
-
-	
-//	OLED_ShowFloatNum(0, 0, FOC_Parame.Speed_target, 5, 0, OLED_8X16);
-//	OLED_ShowFloatNum(0, 16, Speed_Out, 5, 5, OLED_8X16);
-//	OLED_ShowFloatNum(0, 32, FOC_Parame.Sensor_Angle, 3, 8, OLED_8X16);	
-//	OLED_ShowFloatNum(0, 48, FOC_Parame.Sensor_Speed, 3, 8, OLED_8X16);
-	
-	
 	OLED_Printf(0, 0, OLED_6X8, "Angle");
 	if(temp_a == 1)
 	{
@@ -82,10 +71,11 @@ void OLEDDeal(void)
 
 int main(void)
 {	
+	// 先完成底层初始化，再进入周期任务循环。
 	Bsw_Init();
 	FOCPARAM_init();
 	SVPWMPARAM_init();
-	//FOC_Motor_initialize();
+
 	while(1)
 	{
 		task_10ms();
@@ -96,7 +86,7 @@ int main(void)
 	} 	
 }
 
-/*10ms周期*/
+/* 10 ms 周期任务：控制计算、传感器刷新和输出更新都在这里收敛 */
 void task_10ms(void)
 {
 	if(Control_10msFlag == 1)
@@ -110,21 +100,10 @@ void task_10ms(void)
 			MOTOR_ON();
 			if(FOC_Parame.foc_on == 1)
 			{
-				//j = j+FOC_Parame.Speed_target/100;
-				//Set_Speed_loop(j);//
 				Set_Speed(FOC_Parame.Speed_target);
-				//Set_Speed_loop(FOC_Parame.Speed_target);
 			}
 			else
 			{
-				//Set_MBU_loop(FOC_Parame.Speed_target);
-	//			MBD_APIIN();
-	//			FOC_Motor_step();
-	//			MBD_APIOUT();
-	//			PWM_SetCompare1(SVPWM_Parame.cmpA);
-	//			PWM_SetCompare2(SVPWM_Parame.cmpB);
-	//			PWM_SetCompare3(SVPWM_Parame.cmpC);	
-				
 				Set_Angle(FOC_Parame.Angle_target);
 				Set_Speed(FOC_Parame.Speed_target);
 			}
@@ -137,7 +116,6 @@ void task_10ms(void)
 		
 		FOC_Parame.Sensor_Angle = get_Angle();
 		FOC_Parame.Sensor_Speed = get_Speed();
-		//LOWPass_Filter(FOC_Parame.DIR* (FOC_Parame.Sensor_Angle - FOC_Parame.lastSensor_Angle)*100,speedfil,0.8);
 		
 		FOC_Parame.lastSensor_Angle = FOC_Parame.Sensor_Angle;
 		FOC_Parame.lastSensor_Speed = FOC_Parame.Sensor_Speed;
@@ -152,7 +130,7 @@ void task_10ms(void)
 }
 
 
-/*KEY测试*/
+/* 按键输入：短按用于目标值调整，长按用于 PID 参数微调 */
 void KeyDeal(void)
 {	
 	    Key_Tick();
@@ -160,23 +138,17 @@ void KeyDeal(void)
 		static uint8_t PrevState_a = 1;	
 		static uint8_t CurrState_s = 1;
 		static uint8_t PrevState_s = 1;	
-	
-//	    KeyNum = Key_Num;
-//		KeyChan = Key_Chan;
 		if (Key_Num[0] == 1)
 		{
-			//FOC_Parame.Speed_target +=10;
 			FOC_Parame.Angle_target +=10;
 			
 		}
 		if (Key_Num[1] == 1)
 		{
-			//FOC_Parame.Speed_target -=10;
 			FOC_Parame.Angle_target -=10;
 		}
 		if (Key_Num[2] == 1)
 		{
-			//FOC_Parame.Speed_target =0;
 			FOC_Parame.Angle_target =0;
 		}
 		if (Key_Num[3] == 1)
@@ -193,24 +165,20 @@ void KeyDeal(void)
 		if (Key_Num[4] == 1)
 		{
 			FOC_Parame.Speed_target +=10;
-			//FOC_Parame.Angle_target +=10;
 		}
 		if (Key_Num[5] == 1)
 		{
 			FOC_Parame.Speed_target -=10;
-			//FOC_Parame.Angle_target -=10;
 		}
 		if (Key_Num[6] == 1)
 		{
 			FOC_Parame.Speed_target =0;
-			//FOC_Parame.Angle_target =0;
 		}
 		if (Key_Num[7] == 1)
 		{
 			motor_on = !motor_on;
 		}
 		
-/////////////////////////////////////////////////////////////////////////////////	
 		PrevState_a = CurrState_a;
 		CurrState_a = Key_Chan[3];
 		PrevState_s = CurrState_s;

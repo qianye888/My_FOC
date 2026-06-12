@@ -1,162 +1,98 @@
 #include "stm32f10x.h"                  // Device header
 #include "Delay.h"
 #include "sys.h"
+#include "Key.h"
 
 uint8_t Control_20msFlag = 0;
 #define A4  4
 #define A5  5
 #define A6  6
 #define A7  7
-//uint8_t Key_Num;
-//uint8_t Key_Chan;
+
+#define KEY_SHORT_PRESS_ADC_LOW      200
+#define KEY_LONG_PRESS_ADC_HIGH      (4095 - 500)
+#define KEY_IDLE_ADC_MIN             (2048 - 900)
+#define KEY_IDLE_ADC_MAX             (2048 + 900)
+#define KEY_LONG_PRESS_TICKS         30
 
 uint8_t Key_Num[8];
 uint8_t Key_Chan[8];
 
 //void Key_Init(void)
 //{
-//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+uint8_t Key_GetCH(uint8_t ch)
 //	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-//	
-//	GPIO_InitTypeDef GPIO_InitStructure;
+	uint16_t value = KEY_GetValue(ch);
+	if(value <= KEY_SHORT_PRESS_ADC_LOW)
 //	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
+		return 1;
 //	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	if(value >= KEY_LONG_PRESS_ADC_HIGH)
 //	
-//	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
+		return 2;
 //	//GPIO_Init(GPIOA, &GPIO_InitStructure);
-//}
+	if((value >= KEY_IDLE_ADC_MIN) && (value <= KEY_IDLE_ADC_MAX))
 
-//uint8_t Key_GetNum(void)
+		return 0;
 //{
 //	uint8_t Temp;
-//	if (Key_Num)
+	return 0;
 //	{
 //		Temp = Key_Num;
 //		Key_Num = 0;
 //		return Temp;
-//	}
-//	return 0;
+const uint8_t* Key_GetState(void)
 //}
 
+	static const uint8_t key_channels[8] = {A4, A5, A6, A7, A4, A5, A6, A7};
+	static const uint8_t key_levels[8] = {1, 1, 1, 1, 2, 2, 2, 2};
+
+	for (uint8_t index = 0; index < 8; index++)
+	{
+		temp[index] = (Key_GetCH(key_channels[index]) == key_levels[index]) ? 1 : 0;
+	}
 //uint8_t Key_GetChan(void)
-//{
-//	return Key_Chan;
-//}
-
-//uint8_t Key_GetState(void)
-//{
-//	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4) == 0)
-//	{
-//		return 1;
-//	}
-//	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_5) == 0)
-//	{
-//		return 2;
-//	}
-//	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_6) == 0)
-//	{
-//		return 3;
-//	}
-//	if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_7) == 0)
-//	{
-//		return 4;
-//	}
-//	return 0;
-//}
-
-////1.5s内为短按，超过为长按
-
-//void Key_Tick(void)
-//{
-//	static uint8_t Count;
-//	static uint16_t Count_la;
-//	static uint8_t CurrState, PrevState;
-//	
-//	Count ++;
-//	if (Count >= 20)
-//	{
-//		Count = 0;
-//		PrevState = CurrState;
-//		CurrState = Key_GetState();
-//		
-//		if(CurrState != 0 && PrevState == 0)
-//		{
-//			Count_la = 0;
-//		}
-//		
-//		if(Key_GetState() != 0)
-//		{
-//			Count_la++;
-//		}
-//		
-//		if(Count_la < 100)
-//		{
-//			if (CurrState == 0 && PrevState != 0)
-//			{
-//				Key_Num = PrevState;
-//			}	
-//			Key_Chan = 0;		
-//		}
-//		else
-//		{
-//			Key_Chan = Key_GetState();
-//		}
-
-//	}
-//}
-
-
-
-uint8_t Key_GetCH(uint8_t ch)
-{
-	uint8_t temp;
-	if(KEY_GetValue(ch) <= 0 + 200)
 	{
 		temp = 1;
 	}
-	else if(KEY_GetValue(ch) >= 4095 - 500)
+/* 20 ms 扫描一次，按下稳定后分发短按或长按事件。 */
 	{
 		temp = 2;
 	}
-	else if((KEY_GetValue(ch) >= 2048 - 900)&&(KEY_GetValue(ch) <= 2048 + 900))
-	{
-		temp = 0;
-	}
-	
-	return temp;
-}
 
 
 
 uint8_t* Key_GetState(void)
-{
-	static uint8_t temp[8] = {0};
+		const uint8_t *key_state = Key_GetState();
+		static uint16_t long_press_ticks[8];
+		static uint8_t current_state[8];
+		static uint8_t previous_state[8];
 
-	if (Key_GetCH(A4) == 1)
-	{
-		temp[0] = 1;
+		for(uint8_t index = 0; index < 8; index++)
+	static uint8_t temp[8] = {0};
+			previous_state[index] = current_state[index];
+			current_state[index] = key_state[index];			
+
+			if(current_state[index] != 0 && previous_state[index] == 0)
 	}
-	else
+				long_press_ticks[index] = 0;
 	{
 		temp[0] = 0;
-	}
+			if(key_state[index] != 0)
 	
-	if (Key_GetCH(A5) == 1)
+				long_press_ticks[index]++;
 	{
-		temp[1] = 1;
-	}
+			if(long_press_ticks[index] < KEY_LONG_PRESS_TICKS)
 	else
-	{
+				if (current_state[index] == 0 && previous_state[index] != 0)
 		temp[1] = 0;
-	}	
+					Key_Num[index] = previous_state[index];
 	
-	if (Key_GetCH(A6) == 1)
+				Key_Chan[index] = 0;		
 	{
 		temp[2] = 1;
 	}
-	else
+				Key_Chan[index] = key_state[index];
 	{
 		temp[2] = 0;
 	}

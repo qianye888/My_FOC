@@ -2,14 +2,15 @@
 #define  _MAIN_H
 
 #include "sys.h" 
-int8_t temp_a = 1;
-int8_t temp_s = 1;
-uint16_t i = 0;
-uint16_t task_10 = 0;
-uint16_t task_20 = 0;
-uint8_t KeyNum[8];
-uint8_t KeyChan[8];
-uint8_t motor_on = 0;
+
+extern int8_t temp_a;
+extern int8_t temp_s;
+extern uint16_t i;
+extern uint16_t task_10;
+extern uint16_t task_20;
+extern uint8_t KeyNum[8];
+extern uint8_t KeyChan[8];
+extern uint8_t motor_on;
 
 #define B0  1
 #define B1  2
@@ -27,12 +28,12 @@ uint8_t motor_on = 0;
 #define PWM_C    A1  
 extern float full_rotations;
 
-uint8_t Control_10msFlag = 0;
+extern uint8_t Control_10msFlag;
 
 
-uint16_t pwm_a = 0;
-uint16_t pwm_b = 0;
-uint16_t pwm_c = 0;
+extern uint16_t pwm_a;
+extern uint16_t pwm_b;
+extern uint16_t pwm_c;
 
 void Bsw_Init(void);
 void OLEDDeal(void);

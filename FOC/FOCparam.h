@@ -3,30 +3,51 @@
 
 #include "sys.h"
 
-typedef struct//定义pid结构体
+/*
+ * PID 参数块
+ * TarValue: 目标值
+ * ActValue: 实际值
+ * Err: 当前误差
+ * Err_last_1 / Err_last_2: 历史误差，用于微分或扩展控制
+ * Kp / Ki / Kd: 比例、积分、微分系数
+ * Voltage: 控制输出对应的电压量
+ * Integral: 积分累积量
+ * Int_Limit / OUT_Limit: 积分和输出限幅
+ * OUT: 最终控制输出
+ */
+typedef struct
 {
-	float TarValue;//定义目标值
-	float ActValue;//定义真实值
+    float TarValue;
+    float ActValue;
 	
-	float Err;//定义偏差值
-	float Err_last_1;//定义上一个偏差值
-	float Err_last_2;//定义上两个偏差值
-	float Kp,Ki,Kd;//定义比例，积分，微分
-	float Voltage;//定义电压值
-	float Integral;//定义积分值
+    float Err;
+    float Err_last_1;
+    float Err_last_2;
+    float Kp,Ki,Kd;
+    float Voltage;
+    float Integral;
     float Int_Limit;
     float OUT_Limit;
 	float OUT;
 }PID;
 
-typedef struct//定义svpwm结构体
+/*
+ * SVPWM 中间量与输出参数块
+ * Tpwm: PWM 周期计数值
+ * sector_pre / sector: 扇区判定中间值和最终扇区
+ * Ta / Tb / Tc: 三相作用时间
+ * cmpA / cmpB / cmpC: 写入 TIM1 的比较值
+ * pwm_a / pwm_b / pwm_c: 预留的原始 PWM 值
+ * calculate_Ua / Ub / Uc: 调试用三相电压计算结果
+ */
+typedef struct
 {
     uint32_t Tpwm;
     uint8_t sector_pre;
-	uint8_t sector;//
-	float Ta;//
-	float Tb;//
-	float Tc;//
+    uint8_t sector;
+    float Ta;
+    float Tb;
+    float Tc;
     uint32_t cmpA;
     uint32_t cmpB;
     uint32_t cmpC;
@@ -41,7 +62,23 @@ typedef struct//定义svpwm结构体
 }SVPWM;
 
 
-typedef struct//定义FOC结构体
+/*
+ * FOC 主状态参数块
+ * voltage_limit: 允许输出的最大相电压
+ * voltage_power_supply: 母线电压
+ * zero_electric_angle: 编码器零位对应的电角度偏置
+ * Ualpha / Ubeta: α/β 坐标系电压分量
+ * Ua / Ub / Uc: 三相相电压
+ * dc_a / dc_b / dc_c: 三相占空比
+ * Sensor_Angle / Sensor_Speed: 当前反馈值
+ * lastSensor_Angle / lastSensor_Speed: 上次反馈值
+ * Angle_target / Speed_target: 目标位置和目标速度
+ * Angle_loop: 用于速度开环轨迹累计
+ * foc_on: 闭环开关
+ * PP: 极对数
+ * DIR: 方向修正因子
+ */
+typedef struct
 {
     float voltage_limit;
     float voltage_power_supply;
@@ -67,11 +104,11 @@ typedef struct//定义FOC结构体
 }FOC;
 
 extern SVPWM SVPWM_Parame;
-extern FOC FOC_Parame;//定义FOC参数
-extern PID pid_angle;//定义速度环pid
-extern PID pid_speed;//定义距离环pid
+extern FOC FOC_Parame;
+extern PID pid_angle;
+extern PID pid_speed;
 
-void PID_init(void);//PID初始化
+void PID_init(void);
 void FOCPARAM_init(void);
 void SVPWMPARAM_init(void);
 

@@ -11,14 +11,12 @@ float Speed_Out;
 #define Anglelimit  7000
 
 
-/**********************
-角度环：pid 控制
-
-输入：角度误差，通常由 Set_Angle() 计算出的目标角度 - 反馈角度得到。
-输出：角度环输出，实际被上层当作速度目标值使用。
-
-说明：当前工程中角度环不直接驱动 PWM，而是给速度环提供中间目标。
-**********************/
+// 角度环：pid 控制
+//
+// 输入：角度误差，通常由 Set_Angle() 计算出的目标角度 - 反馈角度得到。
+// 输出：角度环输出，实际被上层当作速度目标值使用。
+//
+// 说明：当前工程中角度环不直接驱动 PWM，而是给速度环提供中间目标。
 float Angle_Control(float Angle_Err)
 {
 	float PWM_Out;
@@ -41,14 +39,12 @@ float Angle_Control(float Angle_Err)
 	
 	return PWM_Out;
 }
-/**********************
-速度环：pid 控制
-
-输入：速度误差，通常由 Set_Speed() 计算出的目标速度 - 反馈速度得到。
-输出：速度环输出，作为 Uq 力矩电压送入 SVPWM_Generate()
-
-说明：这是当前闭环直接驱动电机的最后一级控制量。
-**********************/
+// 速度环：pid 控制
+//
+// 输入：速度误差，通常由 Set_Speed() 计算出的目标速度 - 反馈速度得到。
+// 输出：速度环输出，作为 Uq 力矩电压送入 SVPWM_Generate()
+//
+// 说明：这是当前闭环直接驱动电机的最后一级控制量。
 float Speed_Control(float Speed_Err)
 {
 	float PWM_Out;
@@ -65,12 +61,10 @@ float Speed_Control(float Speed_Err)
 	
 	return PWM_Out;
 }
-/**********************
-限幅函数: 限制控制输出
-
-输入：无，直接使用全局 Angle_Out / Speed_Out。
-输出：把控制输出限制在可接受范围内，防止过激励。
-**********************/
+// 限幅函数: 限制控制输出
+//
+// 输入：无，直接使用全局 Angle_Out / Speed_Out。
+// 输出：把控制输出限制在可接受范围内，防止过激励。
 void XianFu(void)
 {
 	float Vlimit = 5;

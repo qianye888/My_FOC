@@ -3,12 +3,10 @@
 #include "sys.h"
 
 #define Xlimit 300
-/***************************************************
-FOC 控制核心模块说明：
-1. 输入：机械角度、速度目标值、编码器反馈、电机参数。
-2. 输出：电压指令、SVPWM 占空比、TIM1 比较值。
-3. 责任：把位置环 / 速度环输出转换为可驱动三相桥的 PWM。
-***************************************************/
+// FOC 控制核心模块说明：
+// 1. 输入：机械角度、速度目标值、编码器反馈、电机参数。
+// 2. 输出：电压指令、SVPWM 占空比、TIM1 比较值。
+// 3. 责任：把位置环 / 速度环输出转换为可驱动三相桥的 PWM。
 /*******************************************
 SysTick初始化(模拟micros函数初始化)：
 
@@ -22,26 +20,22 @@ void Systick_CountMode(void)
 	SysTick->VAL  = 0;
 	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk;
 }
-/*******************************************
-电角度求解：
-
-备注：     
-	1.     电角度      =   机械角度  *  极对数
-	2._electricalAngle = shaft_angle * pole_pairs
-	3. 输入：当前机械角度和零电角度偏置
-	4. 输出：归一化后的电角度，供 SVPWM 使用
-*******************************************/
+// 电角度求解：
+//
+// 备注：
+// 	1.     电角度      =   机械角度  *  极对数
+// 	2._electricalAngle = shaft_angle * pole_pairs
+// 	3. 输入：当前机械角度和零电角度偏置
+// 	4. 输出：归一化后的电角度，供 SVPWM 使用
 float _electricalAngle(void)
 {
 	return _normalizeAngle((float)(FOC_Parame.DIR * FOC_Parame.PP) * get_Angle_2PI()-FOC_Parame.zero_electric_angle);
 }
 
-/*******************************************
-角度归一化处理:
-
-输入：任意角度（弧度）
-输出：范围固定在 [0, 2PI) 的角度，避免三角函数和扇区判断跨界
-*******************************************/
+// 角度归一化处理:
+//
+// 输入：任意角度（弧度）
+// 输出：范围固定在 [0, 2PI) 的角度，避免三角函数和扇区判断跨界
 float _normalizeAngle(float angle)
 {
 	float a = fmod(angle,2*PI);
@@ -50,14 +44,12 @@ float _normalizeAngle(float angle)
 	//其中,condition式要求值的条件表达式,如果条件成立,则返回 expr1 的值。可以将三目运算符看作if-else的简化形式
 }
 
-/*******************************************
-PWM输出计算:
-
-输入：三相参考电压 Ua / Ub / Uc
-输出：更新 FOC_Parame.dc_a / dc_b / dc_c，并写入 TIM1 CCR1~CCR3
-
-说明：这里是最底层的 PWM 写寄存器出口，不再关心控制环来源。
-*******************************************/
+// PWM输出计算:
+//
+// 输入：三相参考电压 Ua / Ub / Uc
+// 输出：更新 FOC_Parame.dc_a / dc_b / dc_c，并写入 TIM1 CCR1~CCR3
+//
+// 说明：这里是最底层的 PWM 写寄存器出口，不再关心控制环来源。
 void setPWM(float Ua,float Ub,float Uc)
 {
 	// 电压限幅，防止占空比超出可用母线范围。
@@ -73,12 +65,10 @@ void setPWM(float Ua,float Ub,float Uc)
 	PWM_SetCompare2(FOC_Parame.dc_b*2400);
 	PWM_SetCompare3(FOC_Parame.dc_c*2400);
 }
-/*******************************************
-力矩控制:
-
-输入：Uq 为目标力矩电压，angle_el 为当前电角度
-输出：更新 FOC_Parame.Ualpha/Ubeta/Ua/Ub/Uc，并调用 setPWM 输出
-*******************************************/
+// 力矩控制:
+//
+// 输入：Uq 为目标力矩电压，angle_el 为当前电角度
+// 输出：更新 FOC_Parame.Ualpha/Ubeta/Ua/Ub/Uc，并调用 setPWM 输出
 void setTorque(float Uq,float angle_el)
 {
 	// 限制力矩电压，避免超出母线一半。
@@ -96,15 +86,12 @@ void setTorque(float Uq,float angle_el)
 	setPWM(FOC_Parame.Ua,FOC_Parame.Ub,FOC_Parame.Uc);
 }
 
-/*******************************************
-SVPWM控制:
-
-输入：Uq 为目标力矩电压，angle_el 为电角度
-输出：更新扇区、Ta/Tb/Tc、cmpA/cmpB/cmpC，并直接下发 PWM
-
-说明：这是当前项目里真正被主循环调用的三相调制入口。
-*******************************************/
-
+// SVPWM控制:
+//
+// 输入：Uq 为目标力矩电压，angle_el 为电角度
+// 输出：更新扇区、Ta/Tb/Tc、cmpA/cmpB/cmpC，并直接下发 PWM
+//
+// 说明：这是当前项目里真正被主循环调用的三相调制入口。
 void SVPWM_Generate(float Uq, float angle_el)
 {
 	// 力矩限幅。
@@ -221,12 +208,10 @@ void SVPWM_Generate(float Uq, float angle_el)
 	PWM_SetCompare3(SVPWM_Parame.cmpC);	
 }
 
-/*******************************************
-FOC控制初始化:
-
-输入：power_supply 为母线电压
-输出：完成 PWM、NVIC 和 PID 基础初始化
-*******************************************/
+// FOC控制初始化:
+//
+// 输入：power_supply 为母线电压
+// 输出：完成 PWM、NVIC 和 PID 基础初始化
 void FOC_Init(float power_supply)
 {
 	FOC_Parame.voltage_power_supply = power_supply;
@@ -237,12 +222,10 @@ void FOC_Init(float power_supply)
 	
 	PID_init();//初始化pid变量
 }
-/*******************************************
-FOC编码器数据初始化:
-
-输入：_PP 为极对数，_DIR 为电机旋转方向修正
-输出：完成 AS5600 初始化、零电角校准和初始速度读取
-*******************************************/
+// FOC编码器数据初始化:
+//
+// 输入：_PP 为极对数，_DIR 为电机旋转方向修正
+// 输出：完成 AS5600 初始化、零电角校准和初始速度读取
 void FOC_AS5600_Init(int _PP,int _DIR)
 {
 	AS5600_Init();//AS5600模拟I2C初始化
@@ -260,72 +243,69 @@ void FOC_AS5600_Init(int _PP,int _DIR)
 	FOC_Parame.Sensor_Speed = get_Speed();//速度初始值计算
 }
 
-float round_float_5dec(float num) 
+float round_float_5dec(float num)
 {
-    int32_t scaled = (int32_t)(num * 100000.0f + 0.5f);
-    return (float)scaled / 100000.0f;
+	int32_t scaled = (int32_t)(num * 100000.0f + 0.5f);
+	return (float)scaled / 100000.0f;
 }
 
-/***********************************************
-电机角度控制:(rad)
-
-输入：Angle 为目标机械角度
-输出：更新 FOC_Parame.Speed_target，作为速度环输入
-
-说明：这里实际是位置环，输出被当作速度目标值使用。
-***********************************************/
+// 电机角度控制:(rad)
+//
+// 输入：Angle 为目标机械角度
+// 输出：更新 FOC_Parame.Speed_target，作为速度环输入
+//
+// 说明：这里实际是位置环，输出被当作速度目标值使用。
 void Set_Angle(float Angle)
 {
 	// 计算位置误差，单位转换为角度制便于 PID 调试。
-	float temp = round_float_5dec((Angle - FOC_Parame.DIR*FOC_Parame.Sensor_Angle)*180/PI);
-	if(temp <5 && temp >-5)
+	float temp = round_float_5dec((Angle - FOC_Parame.DIR * FOC_Parame.Sensor_Angle) * 180 / PI);
+	if(temp < 5 && temp > -5)
 	{
 		temp = 0;
 	}
 	// 位置环输出作为速度目标值。
 	FOC_Parame.Speed_target = Angle_Control(temp);
-	
-	if(FOC_Parame.Speed_target>Xlimit)FOC_Parame.Speed_target=Xlimit;//角度环力矩输出限幅
-	if(FOC_Parame.Speed_target<-Xlimit)FOC_Parame.Speed_target=-Xlimit;
-//	}
+
+	if(FOC_Parame.Speed_target > Xlimit) FOC_Parame.Speed_target = Xlimit;
+	if(FOC_Parame.Speed_target < -Xlimit) FOC_Parame.Speed_target = -Xlimit;
+
 	//SVPWM_Generate(Angle_Out,_electricalAngle());
 	//setTorque(Angle_Out,_electricalAngle());
-
-输入：Speed 为目标速度
-输出：更新 Speed_Out，并调用 SVPWM_Generate 输出三相 PWM
-
-说明：速度环是当前闭环的直接驱动入口。
-	//角度打印
-	//printf("%.2f,%.2f\n",Sensor_Angle,Angle_target);
 }
-	// 速度误差 = 目标速度 - 反馈速度。
+
+// 电机速度控制:(rad/s)
+//
+// 输入：Speed 为目标速度
+// 输出：更新 Speed_Out，并调用 SVPWM_Generate 输出三相 PWM
+//
+// 说明：速度环是当前闭环的直接驱动入口。
 void Set_Speed(float Speed)
 {
 	// 速度环输出作为力矩电压 Uq。
-	//速度读取
-	//Sensor_Speed = get_Speed();
-	//速度控制
 	float temp = round_float_5dec(Speed - FOC_Parame.Sensor_Speed);
-	
+
 	Speed_Out = Speed_Control(temp);
 	XianFu();
 	// 将速度环输出转换为 SVPWM 电压矢量。
+	if(temp <= 5 && temp >= -5)
+	{
 		Speed_Out = 0;
-		
+	}
 
-/*
- * 速度模式的开环轨迹辅助函数。
- * 输入：loop_speed 为每次迭代增加的速度增量
- * 输出：使用累计角度生成 SVPWM，适合做简单演示或调试
- */
 	//setTorque(Speed_Out,_electricalAngle());
 	SVPWM_Generate(Speed_Out,_electricalAngle());
+}
+
+// 速度模式的开环轨迹辅助函数。
+// 输入：loop_speed 为每次迭代增加的速度增量
+// 输出：使用累计角度生成 SVPWM，适合做简单演示或调试
+void Set_Speed_loop(float loop_speed)
 {
 	//速度读取
 	//Sensor_Speed = get_Speed();
 	FOC_Parame.Angle_loop += loop_speed;
-	float loop_angle = _normalizeAngle((float)(FOC_Parame.DIR * FOC_Parame.PP) * FOC_Parame.Angle_loop-FOC_Parame.zero_electric_angle);	
-	SVPWM_Generate(FOC_Parame.voltage_limit,loop_angle);
+	float loop_angle = _normalizeAngle((float)(FOC_Parame.DIR * FOC_Parame.PP) * FOC_Parame.Angle_loop - FOC_Parame.zero_electric_angle);
+	SVPWM_Generate(FOC_Parame.voltage_limit, loop_angle);
 	//速度打印
 	//printf("%.2f,%.2f\n",Sensor_Speed,Speed_target);
 }

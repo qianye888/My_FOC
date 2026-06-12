@@ -6,12 +6,10 @@ FOC FOC_Parame;
 PID pid_angle;
 PID pid_speed;
 
-/**********************
-PID 配置函数：
-1. pid_angle 用于位置环，输出作为速度目标值。
-2. pid_speed 用于速度环，输出作为最终力矩电压。
-3. 这里初始化的是运行时控制参数，不是结构体默认值定义。
-**********************/
+// PID 配置函数：
+// 1. pid_angle 用于位置环，输出作为速度目标值。
+// 2. pid_speed 用于速度环，输出作为最终力矩电压。
+// 3. 这里初始化的是运行时控制参数，不是结构体默认值定义。
 void PID_init(void)
 {
 	// 位置环 PID：用于把角度误差转换成速度目标。
@@ -45,10 +43,8 @@ void PID_init(void)
 	pid_speed.OUT_Limit = 0;
 }
 
-/*
- * FOC 默认参数初始化。
- * 这些值决定了上电后控制环的起始状态、目标值和电机基础配置。
- */
+// FOC 默认参数初始化。
+// 这些值决定了上电后控制环的起始状态、目标值和电机基础配置。
 void FOCPARAM_init(void)
 {
 	// 母线和输出限制参数。
@@ -82,10 +78,8 @@ void FOCPARAM_init(void)
     FOC_Parame.foc_on = 0;
 }
 
-/*
- * SVPWM 默认参数初始化。
- * Tpwm 与 PWM 定时器周期对应，其余字段由 SVPWM_Generate() 动态更新。
- */
+// SVPWM 默认参数初始化。
+// Tpwm 与 PWM 定时器周期对应，其余字段由 SVPWM_Generate() 动态更新。
 void SVPWMPARAM_init(void)
 {
 	// 中央对齐 PWM 的周期计数值，和 PWMFOC_Init() 里的 ARR 配套。

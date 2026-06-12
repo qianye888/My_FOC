@@ -3,18 +3,16 @@
 
 #include "sys.h"
 
-/*
- * PID 参数块
- * TarValue: 目标值
- * ActValue: 实际值
- * Err: 当前误差
- * Err_last_1 / Err_last_2: 历史误差，用于微分或扩展控制
- * Kp / Ki / Kd: 比例、积分、微分系数
- * Voltage: 控制输出对应的电压量
- * Integral: 积分累积量
- * Int_Limit / OUT_Limit: 积分和输出限幅
- * OUT: 最终控制输出
- */
+// PID 参数块
+// TarValue: 目标值
+// ActValue: 实际值
+// Err: 当前误差
+// Err_last_1 / Err_last_2: 历史误差，用于微分或扩展控制
+// Kp / Ki / Kd: 比例、积分、微分系数
+// Voltage: 控制输出对应的电压量
+// Integral: 积分累积量
+// Int_Limit / OUT_Limit: 积分和输出限幅
+// OUT: 最终控制输出
 typedef struct
 {
     float TarValue;
@@ -31,15 +29,13 @@ typedef struct
 	float OUT;
 }PID;
 
-/*
- * SVPWM 中间量与输出参数块
- * Tpwm: PWM 周期计数值
- * sector_pre / sector: 扇区判定中间值和最终扇区
- * Ta / Tb / Tc: 三相作用时间
- * cmpA / cmpB / cmpC: 写入 TIM1 的比较值
- * pwm_a / pwm_b / pwm_c: 预留的原始 PWM 值
- * calculate_Ua / Ub / Uc: 调试用三相电压计算结果
- */
+// SVPWM 中间量与输出参数块
+// Tpwm: PWM 周期计数值
+// sector_pre / sector: 扇区判定中间值和最终扇区
+// Ta / Tb / Tc: 三相作用时间
+// cmpA / cmpB / cmpC: 写入 TIM1 的比较值
+// pwm_a / pwm_b / pwm_c: 预留的原始 PWM 值
+// calculate_Ua / Ub / Uc: 调试用三相电压计算结果
 typedef struct
 {
     uint32_t Tpwm;
@@ -62,22 +58,20 @@ typedef struct
 }SVPWM;
 
 
-/*
- * FOC 主状态参数块
- * voltage_limit: 允许输出的最大相电压
- * voltage_power_supply: 母线电压
- * zero_electric_angle: 编码器零位对应的电角度偏置
- * Ualpha / Ubeta: α/β 坐标系电压分量
- * Ua / Ub / Uc: 三相相电压
- * dc_a / dc_b / dc_c: 三相占空比
- * Sensor_Angle / Sensor_Speed: 当前反馈值
- * lastSensor_Angle / lastSensor_Speed: 上次反馈值
- * Angle_target / Speed_target: 目标位置和目标速度
- * Angle_loop: 用于速度开环轨迹累计
- * foc_on: 闭环开关
- * PP: 极对数
- * DIR: 方向修正因子
- */
+// FOC 主状态参数块
+// voltage_limit: 允许输出的最大相电压
+// voltage_power_supply: 母线电压
+// zero_electric_angle: 编码器零位对应的电角度偏置
+// Ualpha / Ubeta: α/β 坐标系电压分量
+// Ua / Ub / Uc: 三相相电压
+// dc_a / dc_b / dc_c: 三相占空比
+// Sensor_Angle / Sensor_Speed: 当前反馈值
+// lastSensor_Angle / lastSensor_Speed: 上次反馈值
+// Angle_target / Speed_target: 目标位置和目标速度
+// Angle_loop: 用于速度开环轨迹累计
+// foc_on: 闭环开关
+// PP: 极对数
+// DIR: 方向修正因子
 typedef struct
 {
     float voltage_limit;

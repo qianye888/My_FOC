@@ -1,5 +1,6 @@
 #include "FOC.h"
 #include "AS5600.h"
+#include "field_weakening.h"
 #include "sys.h"
 
 #define Xlimit 300
@@ -88,19 +89,19 @@ void setTorque(float Uq,float angle_el)
 
 // SVPWM控制:
 //
-// 输入：Uq 为目标力矩电压，angle_el 为电角度
+// 输入：Ud/Uq 为 d/q 轴电压指令，angle_el 为电角度
 // 输出：更新扇区、Ta/Tb/Tc、cmpA/cmpB/cmpC，并直接下发 PWM
 //
 // 说明：这是当前项目里真正被主循环调用的三相调制入口。
-void SVPWM_Generate(float Uq, float angle_el)
+void SVPWM_Generate(float Ud, float Uq, float angle_el)
 {
-	// 力矩限幅。
+	// 电压分量限幅。
+	Ud = _constrain(Ud,-FOC_Parame.voltage_power_supply/2,FOC_Parame.voltage_power_supply/2);
 	Uq = _constrain(Uq,-FOC_Parame.voltage_power_supply/2,FOC_Parame.voltage_power_supply/2);
-	/*float Ud=0;*/
 	angle_el = _normalizeAngle(angle_el);
-	// 逆 Park 变换：把 q 轴力矩分量映射到 α/β 平面。
-	FOC_Parame.Ualpha = -Uq*sin(angle_el);
-	FOC_Parame.Ubeta  = Uq*cos(angle_el); 
+	// 逆 Park 变换：把 d/q 轴电压分量映射到 α/β 平面。
+	FOC_Parame.Ualpha = Ud*cos(angle_el) - Uq*sin(angle_el);
+	FOC_Parame.Ubeta  = Ud*sin(angle_el) + Uq*cos(angle_el); 
 
     // 1. 计算扇区。
     float Vref1 = FOC_Parame.Ubeta;
@@ -208,6 +209,23 @@ void SVPWM_Generate(float Uq, float angle_el)
 	PWM_SetCompare3(SVPWM_Parame.cmpC);	
 }
 
+void FieldWeakening_Process(void)
+{
+	float uq_request = Speed_Out;
+	float ud_request = 0.0f;
+
+	FieldWeakening_Enable(FOC_Parame.field_weakening_on);
+	FieldWeakening_SetLimits(FOC_Parame.voltage_limit, FOC_Parame.field_weakening_min_ud);
+	FieldWeakening_SetTargets(FOC_Parame.field_weakening_speed_threshold, FOC_Parame.field_weakening_voltage_threshold, FOC_Parame.voltage_margin);
+	FieldWeakening_Update(FOC_Parame.Speed_target, FOC_Parame.Sensor_Speed, uq_request, FOC_Parame.voltage_limit);
+	ud_request = FieldWeakening_GetUd();
+	uq_request = FieldWeakening_GetUq();
+
+	FOC_Parame.field_weakening_ud_ref = ud_request;
+	FOC_Parame.field_weakening_uq_ref = uq_request;
+	SVPWM_Generate(ud_request, uq_request, _electricalAngle());
+}
+
 // FOC控制初始化:
 //
 // 输入：power_supply 为母线电压
@@ -221,6 +239,7 @@ void FOC_Init(float power_supply)
 	NVIC_Config();//中断优先级分配
 	
 	PID_init();//初始化pid变量
+	FieldWeakening_Init();
 }
 // FOC编码器数据初始化:
 //
@@ -293,7 +312,7 @@ void Set_Speed(float Speed)
 	}
 
 	//setTorque(Speed_Out,_electricalAngle());
-	SVPWM_Generate(Speed_Out,_electricalAngle());
+	FieldWeakening_Process();
 }
 
 // 速度模式的开环轨迹辅助函数。
@@ -305,7 +324,7 @@ void Set_Speed_loop(float loop_speed)
 	//Sensor_Speed = get_Speed();
 	FOC_Parame.Angle_loop += loop_speed;
 	float loop_angle = _normalizeAngle((float)(FOC_Parame.DIR * FOC_Parame.PP) * FOC_Parame.Angle_loop - FOC_Parame.zero_electric_angle);
-	SVPWM_Generate(FOC_Parame.voltage_limit, loop_angle);
+	SVPWM_Generate(0.0f, FOC_Parame.voltage_limit, loop_angle);
 	//速度打印
 	//printf("%.2f,%.2f\n",Sensor_Speed,Speed_target);
 }

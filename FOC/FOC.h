@@ -16,6 +16,8 @@ void FOC_AS5600_Init(int _PP,int _DIR);
 void Set_Angle(float Angle);
 void Set_Speed(float Speed);
 void Set_Speed_loop(float loop_speed);
-void SVPWM_Generate(float Uq, float angle_el);
+void SVPWM_Generate(float Ud, float Uq, float angle_el);
+
+void FieldWeakening_Process(void);
 	
 #endif

@@ -76,6 +76,7 @@ typedef struct
 {
     float voltage_limit;
     float voltage_power_supply;
+    float voltage_margin;
     float zero_electric_angle;
     float Ualpha;
     float Ubeta;
@@ -93,6 +94,12 @@ typedef struct
     float Speed_target;	
     float Angle_loop;	
     uint8_t foc_on;
+    uint8_t field_weakening_on;
+    float field_weakening_speed_threshold;
+    float field_weakening_voltage_threshold;
+    float field_weakening_min_ud;
+    float field_weakening_ud_ref;
+    float field_weakening_uq_ref;
 	int PP;	//极对数
 	int DIR;	//无刷电机纠偏旋转方向
 }FOC;

@@ -30,6 +30,7 @@ flowchart TD
 
 - `FOC.c`：电角度计算、SVPWM 生成、FOC 输出控制。
 - `control.c`：角度环和速度环 PID 控制。
+- `field_weakening.c` / `field_weakening.h`：弱磁控制调度层，负责在高转速或电压接近上限时注入负 d 轴电压。
 - `FOCparam.c` / `FOCparam.h`：FOC、SVPWM 和 PID 参数结构体及默认参数初始化。
 
 #### 参数层说明
@@ -74,8 +75,16 @@ STM32 标准外设库相关实现。
 - `FOC_Parame` 保存当前目标值、传感器值和控制开关状态。
 - `Set_Angle()` 先把角度误差转换成速度目标值，属于位置环。
 - `Set_Speed()` 再把速度误差转换成 `Uq`，属于速度环。
-- `SVPWM_Generate()` 把 `Uq` 和电角度转换成三相 PWM 比较值。
+- `FieldWeakening_Process()` 在速度环输出后决定是否注入负 `Ud`，再交给 `SVPWM_Generate()`。
+- `SVPWM_Generate()` 把 `Ud/Uq` 和电角度转换成三相 PWM 比较值。
 - `setPWM()` / `PWM_SetCompare*()` 负责最终写入定时器寄存器。
+
+## 弱磁控制架构
+
+1. 速度环仍然负责输出 `Uq`，保持现有闭环行为不变。
+2. 弱磁层读取目标速度、反馈速度和当前 `Uq`，判断是否接近电压上限。
+3. 当进入弱磁区间时，模块生成负 `Ud`，为高速区保留更多反电动势裕量。
+4. 调制层接收 `Ud/Uq` 双轴指令，并统一转换为 SVPWM 三相占空比。
 
 ## 控制层关系
 

@@ -50,6 +50,7 @@ void FOCPARAM_init(void)
 	// 母线和输出限制参数。
 	FOC_Parame.voltage_limit = 10;
 	FOC_Parame.voltage_power_supply = 12.0;
+	FOC_Parame.voltage_margin = 0.5f;
 	// 编码器零电角，影响电角度对齐。
 	FOC_Parame.zero_electric_angle = 0.0689936;
 	// α/β 和三相量在启动时清零。
@@ -76,6 +77,12 @@ void FOCPARAM_init(void)
 	// 开环轨迹和闭环开关。
 	FOC_Parame.Angle_loop = 0;	
     FOC_Parame.foc_on = 0;
+	FOC_Parame.field_weakening_on = 0;
+	FOC_Parame.field_weakening_speed_threshold = 600.0f;
+	FOC_Parame.field_weakening_voltage_threshold = 7.5f;
+	FOC_Parame.field_weakening_min_ud = -2.0f;
+	FOC_Parame.field_weakening_ud_ref = 0.0f;
+	FOC_Parame.field_weakening_uq_ref = 0.0f;
 }
 
 // SVPWM 默认参数初始化。

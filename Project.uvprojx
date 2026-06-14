@@ -871,6 +871,16 @@
               <FilePath>.\FOC\FOCparam.h</FilePath>
             </File>
             <File>
+              <FileName>FOC_Log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\FOC\FOC_Log.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOC_Log.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\FOC\FOC_Log.h</FilePath>
+            </File>
+            <File>
               <FileName>field_weakening.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\FOC\field_weakening.c</FilePath>

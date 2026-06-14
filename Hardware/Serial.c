@@ -97,7 +97,7 @@ int fputc(int ch, FILE *f)
 
 void Serial_Printf(char *format, ...)
 {
-	char String[100];
+	char String[192];
 	va_list arg;
 	va_start(arg, format);
 	vsprintf(String, format, arg);

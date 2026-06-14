@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FOC Log Viewer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --text: #17202a;
+      --muted: #64748b;
+      --line: #d6dde6;
+      --accent: #1167b1;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 64px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      padding: 16px;
+    }
+    aside,
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    aside {
+      padding: 14px;
+    }
+    section {
+      min-width: 0;
+      padding: 12px;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    input[type="file"],
+    select,
+    button {
+      width: 100%;
+      min-height: 36px;
+      margin-top: 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      font-size: 14px;
+    }
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .summary {
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: 6px;
+      background: #eef3f7;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .checks {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .checks label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      color: var(--text);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 240px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+    .plot-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .plots {
+      display: grid;
+      gap: 14px;
+    }
+    @media (max-width: 800px) {
+      header,
+      main {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FOC Log Viewer</h1>
+    <span id="status">请选择串口保存的 CSV 或 log 文件</span>
+  </header>
+  <main>
+    <aside>
+      <label for="fileInput">日志文件</label>
+      <input id="fileInput" type="file" accept=".csv,.log,.txt">
+
+      <label for="xColumn">横轴</label>
+      <select id="xColumn"></select>
+
+      <label>显示波形</label>
+      <div id="seriesChecks" class="checks"></div>
+
+      <button id="drawButton" type="button">刷新波形</button>
+      <div id="summary" class="summary">等待数据。</div>
+    </aside>
+    <section>
+      <div class="plots">
+        <div>
+          <div class="plot-title"><span>角度</span><span>angle_cmd / angle_fb</span></div>
+          <canvas id="angleCanvas"></canvas>
+        </div>
+        <div>
+          <div class="plot-title"><span>速度</span><span>speed_cmd / speed_fb</span></div>
+          <canvas id="speedCanvas"></canvas>
+        </div>
+        <div>
+          <div class="plot-title"><span>PWM</span><span>pwm_amp / cmp_a / cmp_b / cmp_c</span></div>
+          <canvas id="pwmCanvas"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const defaultColumns = [
+      "time_ms", "angle_cmd", "angle_fb", "speed_cmd", "speed_fb",
+      "uq_cmd", "ud_cmd", "pwm_amp", "cmp_a", "cmp_b", "cmp_c"
+    ];
+    const groups = {
+      angleCanvas: ["angle_cmd", "angle_fb"],
+      speedCanvas: ["speed_cmd", "speed_fb"],
+      pwmCanvas: ["pwm_amp", "cmp_a", "cmp_b", "cmp_c"]
+    };
+    const colors = {
+      angle_cmd: "#0f62fe",
+      angle_fb: "#24a148",
+      speed_cmd: "#8a3ffc",
+      speed_fb: "#ff832b",
+      uq_cmd: "#da1e28",
+      ud_cmd: "#6f6f6f",
+      pwm_amp: "#198038",
+      cmp_a: "#0043ce",
+      cmp_b: "#b28600",
+      cmp_c: "#a2191f"
+    };
+    let rows = [];
+    let columns = defaultColumns.slice();
+
+    const fileInput = document.getElementById("fileInput");
+    const xColumn = document.getElementById("xColumn");
+    const seriesChecks = document.getElementById("seriesChecks");
+    const drawButton = document.getElementById("drawButton");
+    const summary = document.getElementById("summary");
+    const status = document.getElementById("status");
+
+    function parseLog(text) {
+      const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      let header = null;
+      const data = [];
+
+      for (const line of lines) {
+        if (line.startsWith("#")) continue;
+        const parts = line.split(/[,\t ]+/).filter(Boolean);
+        if (!parts.length) continue;
+        const numeric = parts.every(part => Number.isFinite(Number(part)));
+
+        if (!numeric) {
+          header = parts.map(part => part.trim());
+          continue;
+        }
+
+        const names = header && header.length === parts.length ? header : defaultColumns.slice(0, parts.length);
+        const row = {};
+        parts.forEach((part, index) => {
+          row[names[index]] = Number(part);
+        });
+        data.push(row);
+      }
+
+      return {
+        rows: data,
+        columns: header || defaultColumns.filter(name => data.some(row => name in row))
+      };
+    }
+
+    function setupControls(preferredX) {
+      const previousX = preferredX || xColumn.value;
+      xColumn.innerHTML = "";
+      columns.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        xColumn.appendChild(option);
+      });
+      xColumn.value = columns.includes(previousX) ? previousX : (columns.includes("time_ms") ? "time_ms" : columns[0]);
+
+      seriesChecks.innerHTML = "";
+      columns.filter(name => name !== xColumn.value).forEach(name => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = name;
+        input.checked = Object.values(groups).flat().includes(name);
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(name));
+        seriesChecks.appendChild(label);
+      });
+    }
+
+    function getSelectedSeries() {
+      return Array.from(seriesChecks.querySelectorAll("input:checked")).map(input => input.value);
+    }
+
+    function resizeCanvas(canvas) {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+      return { width: canvas.width, height: canvas.height, ratio };
+    }
+
+    function drawPlot(canvasId, names) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext("2d");
+      const size = resizeCanvas(canvas);
+      const pad = { left: 54, right: 18, top: 18, bottom: 36 };
+      const selected = getSelectedSeries();
+      const series = names.filter(name => selected.includes(name) && rows.some(row => Number.isFinite(row[name])));
+      const xName = xColumn.value;
+      const points = rows.filter(row => Number.isFinite(row[xName]));
+
+      ctx.clearRect(0, 0, size.width, size.height);
+      ctx.strokeStyle = "#d6dde6";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pad.left, pad.top, size.width - pad.left - pad.right, size.height - pad.top - pad.bottom);
+
+      if (!points.length || !series.length) {
+        ctx.fillStyle = "#64748b";
+        ctx.font = `${12 * size.ratio}px Arial`;
+        ctx.fillText("无可绘制数据", pad.left + 12, pad.top + 24);
+        return;
+      }
+
+      const xs = points.map(row => row[xName]);
+      const ys = [];
+      series.forEach(name => points.forEach(row => {
+        if (Number.isFinite(row[name])) ys.push(row[name]);
+      }));
+      let minX = Math.min(...xs);
+      let maxX = Math.max(...xs);
+      let minY = Math.min(...ys);
+      let maxY = Math.max(...ys);
+      if (minX === maxX) maxX = minX + 1;
+      if (minY === maxY) {
+        minY -= 1;
+        maxY += 1;
+      }
+      const yPad = (maxY - minY) * 0.08;
+      minY -= yPad;
+      maxY += yPad;
+
+      const plotW = size.width - pad.left - pad.right;
+      const plotH = size.height - pad.top - pad.bottom;
+      const xToPx = value => pad.left + (value - minX) / (maxX - minX) * plotW;
+      const yToPx = value => pad.top + plotH - (value - minY) / (maxY - minY) * plotH;
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = `${11 * size.ratio}px Arial`;
+      ctx.fillText(`${minY.toFixed(2)}`, 8, yToPx(minY));
+      ctx.fillText(`${maxY.toFixed(2)}`, 8, yToPx(maxY) + 4);
+      ctx.fillText(`${minX.toFixed(0)}`, pad.left, size.height - 10);
+      ctx.fillText(`${maxX.toFixed(0)}`, size.width - pad.right - 48, size.height - 10);
+
+      series.forEach((name, index) => {
+        ctx.beginPath();
+        ctx.strokeStyle = colors[name] || `hsl(${index * 57}, 70%, 38%)`;
+        ctx.lineWidth = 2 * size.ratio;
+        let started = false;
+        points.forEach(row => {
+          if (!Number.isFinite(row[name])) return;
+          const x = xToPx(row[xName]);
+          const y = yToPx(row[name]);
+          if (!started) {
+            ctx.moveTo(x, y);
+            started = true;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
+
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.fillRect(pad.left + index * 120, 4 * size.ratio, 10 * size.ratio, 10 * size.ratio);
+        ctx.fillStyle = "#17202a";
+        ctx.fillText(name, pad.left + index * 120 + 14 * size.ratio, 13 * size.ratio);
+      });
+    }
+
+    function drawAll() {
+      drawPlot("angleCanvas", groups.angleCanvas);
+      drawPlot("speedCanvas", groups.speedCanvas);
+      drawPlot("pwmCanvas", groups.pwmCanvas);
+    }
+
+    fileInput.addEventListener("change", async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const parsed = parseLog(text);
+      rows = parsed.rows;
+      columns = parsed.columns;
+      setupControls("time_ms");
+      summary.innerHTML = `文件: ${file.name}<br>样本数: ${rows.length}<br>列: ${columns.join(", ")}`;
+      status.textContent = rows.length ? "日志已载入" : "未解析到有效数据";
+      drawAll();
+    });
+
+    drawButton.addEventListener("click", drawAll);
+    xColumn.addEventListener("change", () => {
+      setupControls(xColumn.value);
+      drawAll();
+    });
+    window.addEventListener("resize", drawAll);
+    setupControls();
+  </script>
+</body>
+</html>

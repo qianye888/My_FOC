@@ -1,6 +1,7 @@
 #include "stm32f10x.h"                  // Device header
 #include "sys.h"
 #include "main.h"	
+#include "FOC_Log.h"
 
 // 全局状态集中在 main.c 定义，其他模块通过 main.h 引用。
 int8_t temp_a = 1;
@@ -8,6 +9,7 @@ int8_t temp_s = 1;
 uint16_t i = 0;
 uint16_t task_10 = 0;
 uint16_t task_20 = 0;
+static uint32_t log_time_ms = 0;
 uint8_t KeyNum[8];
 uint8_t KeyChan[8];
 uint8_t motor_on = 0;
@@ -49,7 +51,7 @@ uint8_t mpu6050_id = 0;
 /* 串口状态输出 */
 void UsartDeal(void)
 {
-	Serial_Printf("%f,%f,%f,%f\r\n", FOC_Parame.Speed_target, FOC_Parame.Sensor_Speed, FOC_Parame.Angle_target, FOC_Parame.Sensor_Angle);
+	FOC_LogPrintLatestCsv();
 }
 
 /* OLED 状态面板 */
@@ -90,6 +92,7 @@ void task_10ms(void)
 	{
 		Control_10msFlag = 0;
 		task_10++;
+		log_time_ms += 10;
 		
 		
 			MPU6050_ReadRaw();
@@ -119,6 +122,7 @@ void task_10ms(void)
 		
 		FOC_Parame.lastSensor_Angle = FOC_Parame.Sensor_Angle;
 		FOC_Parame.lastSensor_Speed = FOC_Parame.Sensor_Speed;
+		FOC_LogCapture(log_time_ms);
 		UsartDeal();
 		
 		MBDSV_APIIN();
@@ -265,6 +269,7 @@ void Bsw_Init(void)
 	OLED_Init();
 	RP_Init();
 	Serial_Init(19200);
+	FOC_LogInit();
 	LED_Init();
 	//Key_Init();
 }
